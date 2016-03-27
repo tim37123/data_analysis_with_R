@@ -1,12 +1,11 @@
----
-Tim Lindsey Data Exploration ggplot midwest data
----
-```{r}
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+echo=FALSE, warning=FALSE, message=FALSE)
 ```
 
-```{r, echo=FALSE}
-```
 
+#Tim Lindsey Data Exploration ggplot midwest data
+##Overview
 ```{r}
 library('ggplot2')
 library('dplyr')
@@ -31,7 +30,8 @@ this view is a little messy. let me modify the x axis
 ggplot(aes(x = poptotal), data=midwest) + geom_histogram(bins=100) + scale_x_continuous(limits = c(0, 100000))
 ```
 
-I can see from this data that there is nothing above 100000 as far as population. next i wonder if area relates to  the population
+I can see from this data that there is nothing above 100000 as far as 
+population. next i wonder if area relates to  the population
 ```{r}
 ggplot(aes(area, poptotal), data=midwest) + geom_point()
 ```
@@ -56,12 +56,20 @@ ggplot(midwest, aes(popdensity)) + geom_histogram(binwidth=500)
 
 interesting, but I want to hone in on the densest area
 ```{r}
-ggplot(midwest, aes(popdensity)) + geom_histogram(binwidth=500) + scale_x_continuous(limits = c(0,12500), breaks = c(2000, 4000, 6000, 8000, 10000, 12000))
+ggplot(midwest, aes(popdensity)) + geom_histogram(binwidth=500) + 
+scale_x_continuous(limits = c(0,12500), breaks = c(2000, 4000, 6000, 8000, 
+                                                   10000, 12000))
 ```
 
-a little clearer where the activity is here, but I want to see the median (green) and mean (blue) as well
+a little clearer where the activity is here, but I want to see the 
+median (green) and mean (blue) as well
 ```{r}
-ggplot(midwest, aes(popdensity)) + geom_histogram(binwidth=500) + scale_x_continuous(limits = c(0,12500), breaks = c(2000, 4000, 6000, 8000, 10000, 12000)) + geom_vline(xintercept = 1156.21, color="green", linetype="longdash") + geom_vline(xintercept = 3097.74, color="blue", linetype="longdash") + labs(title="Population Density in the Midwest",x="Density",y="Count")
+ggplot(midwest, aes(popdensity)) + geom_histogram(binwidth=500) +
+scale_x_continuous(limits = c(0,12500), breaks = c(2000, 4000, 6000, 8000, 
+                                                   10000, 12000)) +
+geom_vline(xintercept = 1156.21, color="green", linetype="longdash") +
+geom_vline(xintercept = 3097.74, color="blue", linetype="longdash") +
+labs(title="Population Density in the Midwest",x="Density",y="Count")
 ```
 
 Next I'm interested to see if there's a positive correlation between increased poverty (percentage wise) as population increases
@@ -73,10 +81,13 @@ ggplot(midwest, aes(percpovertyknown, poptotal)) + geom_point()
 Let's docus in more on the high in with the highest concentration
 ```{r}
 coef(lm(poptotal~percpovertyknown, data=midwest))
-ggplot(midwest, aes(percpovertyknown, poptotal)) + geom_point() +geom_smooth(method="lm", se = FALSE) + scale_x_continuous(limits = c(95, 100))
+ggplot(midwest, aes(percpovertyknown, poptotal)) + geom_point() + 
+geom_smooth(method="lm", se = FALSE) + scale_x_continuous(limits = c(95, 100))
 ```
 
-Generally speaking you do seem to see greater instances of increased population as you move toward higher perc poverty. There may be a loose correlation, let's do a correlation test to see how strong
+Generally speaking you do seem to see greater instances of increased population
+as you move toward higher perc poverty. There may be a loose correlation, let's
+do a correlation test to see how strong
 
 ```{r}
 cor.test(midwest$percpovertyknown, midwest$poptotal)
@@ -88,19 +99,25 @@ educated increases.
 
 ```{r}
 coef(lm(percpovertyknown~percollege, data=midwest))
-ggplot(midwest, aes(percollege, percpovertyknown)) + geom_point() + geom_smooth(method="lm", se=FALSE) + labs(title="Poverty as Educated Population Increases",x="Percent of pop College Educated",y="Percent of pop Poverty")
+ggplot(midwest, aes(percollege, percpovertyknown)) + geom_point() +
+geom_smooth(method="lm", se=FALSE) + labs(title="Poverty as Educated Population
+Increases",x="Percent of pop College Educated",y="Percent of pop Poverty")
 ```
 
-Indeed it appears there is a noticable negative correlation associated with college educated populations and povery. The cor-test backs that up:
+Indeed it appears there is a noticable negative correlation associated with
+college educated populations and povery. The cor-test backs that up:
 
 ```{r}
 cor.test(midwest$percpovertyknown, midwest$percollege)
 ```
 
-I'm noticing that there's 2 parameters: "percpovertynkown" and "percbelowpoverty" I want a total picture of poverty so I want to combine those values in to a new parameter "totalpercpoverty"
+I'm noticing that there's 2 parameters: "percpovertynkown" and 
+"percbelowpoverty" I want a total picture of poverty so I want to 
+combine those values in to a new parameter "totalpercpoverty"
 
 ```{r}
-midwest <- transform(midwest, totalpercpoverty = percpovertyknown + percbelowpoverty)
+midwest <- transform(midwest, totalpercpoverty = percpovertyknown +
+percbelowpoverty)
 ```
 
 In hindsight this doesn't appear to be how the percentages work, need to clear this column
@@ -111,49 +128,80 @@ midwest$totalpercpoverty <- NULL
 Given poverty and race data I'd like to see a chart showing poverty as percent of each minority increases
 
 ```{r}
-ggplot(midwest, aes(percpovertyknown)) + geom_point(aes(y = percamerindan, colour = "percamerindan")) + 
+ggplot(midwest, aes(percpovertyknown)) + geom_point(aes(y = percamerindan, 
+                                            colour = "percamerindan")) + 
 geom_point(aes(y = percblack, colour = "percblack")) + 
 geom_point(aes(y = percasian, colour = "percasian")) + 
-geom_point(aes(y = percother, colour = "percother")) + labs(title="Rate of Poverty as Demographics Increase",x="Povery Percentage",y="Population percent")
+geom_point(aes(y = percother, colour = "percother")) + labs(title="Rate of
+Poverty as Demographics Increase",x="Povery Percentage",y="Population percent")
 ```
 
-There's definitely a trend that's particularly clear with the "percblack" parameter with an additional significant outlier related to "percamerindan"
+There's definitely a trend that's particularly clear with the "percblack"
+parameter with an additional significant outlier related to "percamerindan"
 
-Based on what we know looking at previous graphs it seems likely a minority is also less likely to have by college educated
+Based on what we know looking at previous graphs it seems likely a minority is
+also less likely to have by college educated
 
 ```{r}
-ggplot(midwest, aes(percollege)) + geom_point(aes(y = percamerindan, colour = "percamerindan")) + 
+ggplot(midwest, aes(percollege)) + geom_point(aes(y = percamerindan, colour =
+                                                    "percamerindan")) + 
 geom_point(aes(y = percblack, colour = "percblack")) + 
 geom_point(aes(y = percasian, colour = "percasian")) + 
-geom_point(aes(y = percother, colour = "percother")) + ylab("Population percent")
+geom_point(aes(y = percother, colour = "percother")) + 
+ylab("Population percent")
 ```
 
 
 
----
-Final plots and summary
----
+
+##Final plots and summary
 Plot 1: Hostogram of population density in the midwest including median (green) and mean (blue) populations for entire dataset
 ```{r}
-ggplot(midwest, aes(popdensity)) + geom_histogram(binwidth=500) + scale_x_continuous(limits = c(0,12500), breaks = c(2000, 4000, 6000, 8000, 10000, 12000)) + geom_vline(xintercept = 1156.21, color="green", linetype="longdash") + geom_vline(xintercept = 3097.74, color="blue", linetype="longdash") + labs(title="Population Density in the Midwest",x="Density",y="Count")
+ggplot(midwest, aes(popdensity)) + geom_histogram(binwidth=500) +
+scale_x_continuous(limits = c(0,12500), breaks = c(2000, 4000, 6000, 8000, 
+                                                   10000, 12000)) +
+geom_vline(xintercept = 1156.21, color="green", linetype="longdash") +
+geom_vline(xintercept = 3097.74, color="blue", linetype="longdash") +
+labs(title="Population Density in the Midwest",x="Density",y="Count")
 ```
 
 Plot 2: Rate of poverty by County as rate of college educated population increases
 ```{r}
-ggplot(midwest, aes(percollege, percpovertyknown)) + geom_point() + geom_smooth(method="lm", se=FALSE) + labs(title="Poverty as Educated Population Increases",x="Percent of pop College Educated",y="Percent of pop Poverty")
+ggplot(midwest, aes(percollege, percpovertyknown)) + geom_point() +
+geom_smooth(method="lm", se=FALSE) + labs(title="Poverty as Educated Population
+Increases",x="Percent of pop College Educated",y="Percent of pop Poverty")
+
+cor.test(midwest$percollege, midwest$percpovertyknown)
 ```
 
-Plat 3: Rate of poverty as percentage of particular minority populations increate in a county
+Plot 3: Rate of poverty as percentage of particular minority populations 
+increate in a county
 ```{r}
-ggplot(midwest, aes(percpovertyknown)) + geom_point(aes(y = percamerindan, colour = "percamerindan")) + 
+ggplot(midwest, aes(percpovertyknown)) + geom_point(aes(y = percamerindan, 
+colour = "percamerindan")) + 
 geom_point(aes(y = percblack, colour = "percblack")) + 
 geom_point(aes(y = percasian, colour = "percasian")) + 
 geom_point(aes(y = percother, colour = "percother")) + 
 scale_y_continuous(limits=c(0,50)) + 
-labs(title="Rate of Poverty as Demographics Increase",x="Povery Percentage",y="Population percent") 
+labs(title="Rate of Poverty as Demographics Increase",x="Povery
+Percentage",y="Population percent") 
+
+fit <- lm(percpovertyknown ~ percblack + percasian + percother + percamerindan, data=midwest)
+summary(fit)
 ```
 
----
-Reflection
----
-This is a fun exercise. It's surprisingly difficult to find general data out in the wild that's moderately well cleaned. The midwest dataset is interesting enough and well munged as part of the ggplot package. One of the most difficult things I'm finding is determining the most useful visualization type. In some places line bar and scatter visualizations all provide interesting accounts of the same data. One of the most interesting features of this dataset is it's insight into poverty, it could be extremely useful to get insight into common precursors of poverty. However the only other real useful data points are around education and percentage of minorities. I suspect there are many other possible causes for poverty so the dataset isn't quite as useful as it could be. Additional info such as crime rates in these counties could prove extremely valuable.
+
+##Reflection
+
+This is a fun exercise. It's surprisingly difficult to find general data out in
+the wild that's moderately well cleaned. The midwest dataset is interesting
+enough and well munged as part of the ggplot package. One of the most difficult
+things I'm finding is determining the most useful visualization type. In some
+places line bar and scatter visualizations all provide interesting accounts of
+the same data. One of the most interesting features of this dataset is it's
+insight into poverty, it could be extremely useful to get insight into common
+precursors of poverty. However the only other real useful data points are 
+around education and percentage of minorities. I suspect there are many other
+possible causes for poverty so the dataset isn't quite as useful as it could 
+be. Additional info such as crime rates in these counties could prove 
+extremely valuable.
